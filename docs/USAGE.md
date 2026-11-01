@@ -92,7 +92,8 @@ plugin_manager  action: install_bundle  target: <本目录绝对路径>
 | --- | --- | --- |
 | 选择器里没有"专家模式" | 预设行激活失败 | 看 `list_plugins` 里 `preset-expert` 的诊断 |
 | `dsh-expert` 行 `failed`，诊断含 "refuses to run" | harness 低于基线 | 升级 harness，或按 2.7 调低 `minimumHarnessVersion`（自担风险） |
-| 专家模式里 `run_code` 没有任何可调用声明 | persona 分支没渲染 SDK | 确认 `sdk: true`；确认部署组合了 `ptcRuntime`（`@deepseek-ai/dsh-ptc-runtime-node`） |
+| 专家模式里 `run_code` 没有任何可调用声明 | `tool-presentation` 行没挂上（它在等 `ptcRuntime`） | 看 `list_plugins` 里 `tool-presentation` 是否停在等待依赖 |
+| 提示词里没有 SDK，工具是原生调用 | 部署没有 `ptcRuntime`，persona 已按设计降级 | 属预期：没有 PTC 运行时就没有 PTC 形态；装上 `@deepseek-ai/dsh-ptc-runtime-node` 即可 |
 | 提示 "no Host SDK renderer for runtime language" | runtime 语言不是 TS/Python | 该 runtime 尚未支持 |
 | 提示某工具 "declares no output schema" | 你加回的工具没有 output schema | PTC 形态要求每个可调用工具都有 output schema；该工具不能进这个模式 |
 | 改了 YAML 没生效 | 未重启 / 被上层 patch 覆盖 | 重启；`list_plugins` 里 `overridden` 表示更高优先级层胜出 |

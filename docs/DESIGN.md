@@ -61,6 +61,11 @@ return {
 3. 按 `ptcRuntime.language` 选 `renderToolsSdk` / `renderToolsSdkPy`；
 4. 把 SDK 拼在身份文本之后。
 
+还有一道降级保护：`renderSdk` 在 `ptcRuntime` 缺失时**返回空串**。
+没有 PTC 运行时就绝不会有 PTC 表现形式，此时 agent 走原生调用；
+若仍把 `tools.<name>(...)` 声明写进提示词，就是在骗模型去调一个不存在的面。
+降级成"没有 SDK 的专家 persona"才是正确行为。
+
 `interpolate: false` 是必须的：段落里是生成的 TypeScript，若被当作 `{{变量}}` 模板扫描会出问题。
 
 ## 4. 工具面的取舍理由

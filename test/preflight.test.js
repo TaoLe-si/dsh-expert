@@ -7,6 +7,7 @@ import {
   evaluateGate,
   missingCapabilities,
   readPackageVersion,
+  refuse,
 } from '../lib/preflight.js'
 
 /** A context that satisfies every declared capability. */
@@ -108,6 +109,14 @@ test('a throwing capability probe counts as missing rather than crashing the gat
   }
   const missing = missingCapabilities(ctx)
   assert.equal(missing.length, REQUIRED_CAPABILITIES.length)
+})
+
+test('the refusal names the plugin and the baseline it actually demanded', () => {
+  const defaulted = refuse('harness 0.2.0 is older than the required baseline 0.2.1-rc.4')
+  assert.match(defaulted.message, /^dsh-expert: refuses to run/)
+  assert.match(defaulted.message, /requires harness >= 0\.2\.1-rc\.4/)
+  // A raised baseline must report the raised version, not the module default.
+  assert.match(refuse('too old', '99.0.0').message, /requires harness >= 99\.0\.0/)
 })
 
 test('honours a custom probe package list', () => {

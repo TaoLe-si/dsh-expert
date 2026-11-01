@@ -142,6 +142,13 @@ test('uses the Python SDK renderer when the runtime language is python', async (
   assert.ok(ctx.observed.sections[0].text(deepSeekContext).includes('PYSDK[bash,todo_write]'))
 })
 
+test('declares no SDK when the deployment composes no PTC runtime', async () => {
+  const ctx = fakeContext({ runtime: null })
+  await apply(ctx, {})
+  // Without a PTC runtime the agent calls tools natively, so an SDK would be a lie.
+  assert.equal(ctx.observed.sections[0].text(deepSeekContext), EXPERT_PROMPT)
+})
+
 test('refuses a runtime language it cannot render', async () => {
   const ctx = fakeContext({ runtime: { language: 'ruby' } })
   await apply(ctx, {})
