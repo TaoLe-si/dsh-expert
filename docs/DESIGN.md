@@ -99,7 +99,26 @@ return {
 设计上刻意**不**用"版本字符串"当唯一真理：一段被改过的版本号比缺失的能力更不可靠。
 semver 预发布比较按规范实现（`0.2.1-rc.4 < 0.2.1-rc.10`，`rc.4 < 0.2.1`），并有 11 个用例覆盖。
 
-## 6. DeepSeek 专属怎么落地
+## 6. 为什么自己实现 Standard Schema
+
+Cordis 校验每一行的 `config` 走的是 Standard Schema 接口：
+
+```js
+function resolveConfig(runtime, config) {
+  if (!runtime.Config) return config;
+  const result = runtime.Config["~standard"].validate(config);
+  if ("then" in result) throw new TypeError("Async config validation is not supported");
+  if (result.issues) throw new ValidationError(result.issues);
+  else return result.value;
+}
+```
+
+所以 `Config` **不能**是一个裸 JSON Schema 对象：那样 `Config["~standard"]` 是 `undefined`，
+整行会在激活时崩掉。官方包用 `schemastery` 实现这个接口，但本插件不依赖任何
+`@deepseek-ai/*` 包（那些从 dsh 安装目录解析，声明依赖会钉住第二份拷贝），
+所以 `lib/schema.js` 直接实现同一个接口：同步、填默认值、按路径报错。
+
+## 7. DeepSeek 专属怎么落地
 
 模型属于**会话**，预设属于**组合**，两者粒度不同。所以：
 

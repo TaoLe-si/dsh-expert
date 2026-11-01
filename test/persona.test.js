@@ -163,9 +163,12 @@ test('notes the non-DeepSeek model per agent rather than per mount', async () =>
   assert.equal(ctx.observed.sections[0].text(deepSeekContext).includes(NON_DEEPSEEK_NOTE), false)
 })
 
-test('exposes a config that defaults every optional field', () => {
-  assert.deepEqual(Object.keys(Config.properties).sort(), ['includeRuntimeContext', 'noteNonDeepSeek', 'prefix', 'sdk'])
-  assert.equal(Config.properties.includeRuntimeContext.default, false)
-  assert.equal(Config.properties.sdk.default, true)
-  assert.equal(Config.additionalProperties, false)
+test('exposes a Standard Schema config that defaults every optional field', () => {
+  assert.equal(typeof Config['~standard'].validate, 'function')
+  assert.deepEqual(Config['~standard'].validate({}), {
+    value: { includeRuntimeContext: false, sdk: true, noteNonDeepSeek: true },
+  })
+  // The prefix stays absent unless configured, so the built-in identity is used.
+  assert.equal('prefix' in Config['~standard'].validate({}).value, false)
+  assert.ok(Config['~standard'].validate({ nope: 1 }).issues)
 })

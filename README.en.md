@@ -124,7 +124,7 @@ The refusal names this plugin and the baseline, so it surfaces in the harness ac
 ## Development
 
 ```bash
-npm test    # 67 cases: semver, gate decisions, persona/SDK rendering, preset structure, baseline package set
+npm test    # 75 cases: semver, gate decisions, Standard Schema, persona/SDK rendering, preset structure, baseline package set
 ```
 
 ## License

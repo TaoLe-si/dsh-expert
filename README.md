@@ -128,7 +128,7 @@ Harness 没有暴露版本服务，所以宿主行用三条证据链判断，任
 ## 六、开发
 
 ```bash
-npm test        # 67 个用例：版本比较、闸门决策、persona/SDK 渲染、预设结构、基线包存在性
+npm test        # 75 个用例：版本比较、闸门决策、Standard Schema、persona/SDK 渲染、预设结构、基线包存在性
 ```
 
 仓库结构：
@@ -141,7 +141,9 @@ lib/persona.js             预设内 persona 行：把 PTC SDK 渲染进 complet
 lib/prompt.js              专家提示词与 DeepSeek 判定（纯函数，可测）
 lib/preflight.js           闸门决策（纯函数，可测）
 lib/version.js             semver 比较（纯函数，可测）
-test/                      67 个用例
+lib/schema.js              零依赖 Standard Schema（Cordis 用它校验每个行的 config）
+test/                      75 个用例
+scripts/                   从 app.asar 提取基线、重生成基线夹具
 docs/                      设计说明、验证状态
 ```
 

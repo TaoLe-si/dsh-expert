@@ -1,5 +1,5 @@
 {
-  "_provenance": "Generated from the DSH desktop 2.0.20-next harness (@deepseek-ai package set inside app.asar). Do not edit by hand; regenerate when the baseline moves.",
+  "_provenance": "Generated from the DSH Desktop harness (@deepseek-ai package set inside app.asar). Do not edit by hand; regenerate with scripts/generate-baseline-fixture.mjs when the baseline moves.",
   "harnessVersion": "0.2.1-rc.4",
   "desktopVersion": "2.0.20-next",
   "packageCount": 313,

@@ -6,11 +6,11 @@
 
 ## 一、已验证（可复现）
 
-### 1. 静态验证：67 个自动化用例全部通过
+### 1. 静态验证：75 个自动化用例全部通过
 
 ```bash
 npm test
-# ℹ tests 67  ℹ pass 67  ℹ fail 0
+# ℹ tests 75  ℹ pass 75  ℹ fail 0
 ```
 
 覆盖：
@@ -23,6 +23,7 @@ npm test
 | `test/persona.test.js` | `complete: true` + `interpolate: false`；SDK 渲染进段落；按 `context.scope` 投影；`suppressRuntimeContext` 默认触发；`sdkSchemas` 缺失时回退到手工投影并排除 `run_code`；缺 output schema 时报错；python 运行时切换渲染器 |
 | `test/preset.test.js` | 预设声明结构；`tool-presentation: ptc`；自带 persona 行而非官方 persona 行；todo/goal 保留；fs 只开 `readImage`；平台开关；compaction isolate；**20 个应被丢弃的 PTC 行确实没有挂载**；presentation 在最后 |
 | `test/baseline.test.js` | 挂载的每个 `@deepseek-ai/*` 包都在基线包集合中存在；每个行名可被解析 |
+| `test/schema.test.js` | Standard Schema 接口；默认值填充；类型不匹配按路径报错；未知字段被拒；数组元素路径 |
 | `test/bundle.test.js` | 清单里所有运行期路径存在；bundle patch 列表；locale 元数据；图标为 SVG 且 < 256 KiB；`files` 覆盖 |
 
 ### 2. 基线事实核对（读源码得出，非猜测）
