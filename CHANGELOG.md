@@ -25,6 +25,7 @@ Initial release, pinned to DSH harness `0.2.1-rc.4` (Desktop 2.0.20-next).
 - Bilingual display metadata (`locale/zh.json`, `locale/en.json`) and an original SVG icon.
 - `lib/schema.js`: a dependency-free Standard Schema, because Cordis validates each row's `config` through `Config["~standard"].validate` and this bundle declares no `@deepseek-ai/*` dependency.
 - `scripts/asar-extract.mjs` and `scripts/generate-baseline-fixture.mjs`, so the baseline fixture stays reproducible when the harness moves.
+- `scripts/install-profile.mjs` and `scripts/verify-install.mjs`: the two state changes `install_bundle` makes for a local checkout, plus 11 install-time checks (patch parsing, specifier resolution, row-id uniqueness, bundle collisions, manifest state) — everything provable without a restart.
 - 75 unit and structural tests covering semver precedence, gate decisions, persona/SDK rendering,
   preset composition, and baseline package existence.
 

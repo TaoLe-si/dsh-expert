@@ -46,7 +46,9 @@
     "node": "^22.19.0 || >=24.0.0"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "verify:install": "node scripts/verify-install.mjs",
+    "install:profile": "node scripts/install-profile.mjs"
   },
   "keywords": [
     "dsh",

@@ -8,6 +8,30 @@ plugin_manager  action: install_bundle  target: <本目录绝对路径>
 
 安装后**重启** harness。Agent 模式选择器里出现 **专家模式**。
 
+### 手工安装（没有 plugin_manager 时）
+
+`plugin_manager install_bundle` 是官方路径。若当前会话没有这个工具，等价的两步是：
+
+```bash
+cd "$DSH_PROFILE_DIR"
+# 1) 让包可解析（Windows 用 junction，不需要管理员）
+cmd //c "mklink /J node_modules\dsh-expert E:\dsh-expert"
+# 2) 登记为 link 依赖 + 选为 bundle
+node /e/dsh-expert/scripts/install-profile.mjs "$(pwd -W)"
+# 3) 重启前自检
+node /e/dsh-expert/scripts/verify-install.mjs "$(pwd -W)"
+```
+
+不改 `cordis.patch.yml`（那是你自己的用户层）。
+
+### 卸载 / 回滚
+
+```bash
+cd "$DSH_PROFILE_DIR"
+node /e/dsh-expert/scripts/install-profile.mjs "$(pwd -W)" --remove
+cmd //c "rmdir node_modules\dsh-expert"
+```
+
 ## 2. 常见调参配方
 
 全部改动都在 `presets/expert.patch.yml`，改完重装/重启即可，**不需要改代码**。

@@ -6,11 +6,11 @@
 
 ## 一、已验证（可复现）
 
-### 1. 静态验证：75 个自动化用例全部通过
+### 1. 静态验证：77 个自动化用例全部通过
 
 ```bash
 npm test
-# ℹ tests 75  ℹ pass 75  ℹ fail 0
+# ℹ tests 77  ℹ pass 77  ℹ fail 0
 ```
 
 覆盖：
@@ -39,6 +39,47 @@ npm test
 - `bash`(persistent)、`read`/`write`/`edit`/`read_image` 都声明了 `output.schema`
   → `dsh-tool-bash-persistent`、`dsh-tool-fs` 均有 `output: { schema: … }`，
   因此 `renderToolsSdk` 不会因缺 output 而抛错。
+
+### 3. 安装前已取得、且相当强的运行时旁证
+
+这几条是在**不重启**的前提下能找到的最有力证据，值得单独记：
+
+1. **同一套机制在本部署里正在运行。** 本 profile 的 `agent-preset-registry` 配置是
+   `selectedDefault: ptc-minimal`，而 `dsh-minimal-ptc` 的 persona 行用的正是本插件
+   依赖的那套机制：`ctx.loader.import("@deepseek-ai/dsh-tools")` →
+   `renderToolsSdk(...)` → 写进一个 `complete: true` 段落。
+   **本会话本身就跑在这个预设上**，所以"在 write 时用 loader 导入 dsh-tools 并把 SDK
+   渲染进 complete 段落"这条路径在此部署是通的，不是理论。
+2. **树外插件能解析 harness 包。** `$DSH_HOME/profiles/node_modules` 里有 252 个扁平
+   符号链接，`dsh-tools`、`dsh-base`、`dsh-tool-todo`、`dsh-tool-goal`、
+   `dsh-agent-tool-presentation`、`dsh-persona`、`dsh-web-app` 均可解析。
+3. **版本闸门在这里正好走兜底分支。** `dsh-agent-preset`（单数）**不在**那份链接里，
+   所以本插件的闸门拿到的是"版本不可读"，于是走**能力证据**分支——这正是设计
+   §5 的第 2 条兜底路径。也就是说安装后能顺带验证兜底逻辑本身。
+4. **启动过程从不调用 pnpm**（`dsh-app-boot` 内无 pnpm 子进程），因此把插件登记为
+   `link:` 依赖不会触发 frozen-lockfile 失败。`resolveBundleDir` 从 `installAnchor`
+   与 `profileDir/package.json` 两处解析，junction 可被解析。
+
+### 4. 本次安装做了什么（可回溯）
+
+| 步骤 | 内容 |
+| --- | --- |
+| 备份 | `package.json.bak-dsh-expert-20261101-231700`、`cordis.patch.yml.bak-dsh-expert-20261101-231700` |
+| 链接 | `node_modules/dsh-expert` → `E:dsh-expert`（junction） |
+| 依赖 | `"dsh-expert": "link:E:/dsh-expert"` |
+| 选中 | `dsh.profile.bundles` 末尾追加 `dsh-expert` |
+
+`cordis.patch.yml` **未改动**（用户层保持原样）。
+安装后 `npm run verify:install` 的 11 项检查全部 PASS；`npm test` 77/77。
+
+### 5. 回滚
+
+```bash
+cd "$DSH_PROFILE_DIR"
+node /e/dsh-expert/scripts/install-profile.mjs "$(pwd -W)" --remove
+cmd //c "rmdir node_modules\dsh-expert"
+cp package.json.bak-dsh-expert-20261101-231700 package.json   # 可选：连格式一起还原
+```
 
 ## 二、尚未验证（不要当成已通过）
 
