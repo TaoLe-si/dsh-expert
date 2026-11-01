@@ -1,0 +1,73 @@
+{
+  "name": "dsh-expert",
+  "version": "0.1.0",
+  "description": "专家模式：以官方极简提示词为骨架，只保留 run_code、todo_write 与 goal 迭代，为 DeepSeek 模型优化的 DSH Harness Agent 模式。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./preset-persona": "./lib/persona.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./presets/expert.patch.yml": "./presets/expert.patch.yml",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "presets",
+    "locale",
+    "cordis.patch.yml",
+    "icon.svg",
+    "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "docs"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": [
+        "./cordis.patch.yml",
+        "./presets/expert.patch.yml"
+      ]
+    },
+    "baseline": {
+      "harness": "0.2.1-rc.4",
+      "desktop": "2.0.20-next",
+      "node": "^22.19.0 || >=24.0.0",
+      "models": [
+        "deepseek"
+      ]
+    }
+  },
+  "engines": {
+    "node": "^22.19.0 || >=24.0.0"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "dsh-bundle",
+    "agent-preset",
+    "deepseek",
+    "expert-mode",
+    "ptc",
+    "run_code"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TaoLe-si/dsh-expert.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TaoLe-si/dsh-expert/issues"
+  },
+  "homepage": "https://github.com/TaoLe-si/dsh-expert#readme",
+  "devDependencies": {
+    "js-yaml": "^4.1.1"
+  }
+}

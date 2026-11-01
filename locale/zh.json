@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "专家模式",
+    "description": "以官方极简提示词为骨架的 DeepSeek 专属 Agent 模式：动作面只有 run_code，只保留 todo 清单与 goal 目标迭代；内置版本闸门，拒绝在低于 0.2.1-rc.4 的 harness 上运行。"
+  }
+}

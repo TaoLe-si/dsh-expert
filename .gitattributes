@@ -1,0 +1,7 @@
+# Normalize to LF in the repository so the YAML patches and JS modules
+# behave identically on Windows and POSIX harnesses.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.webp binary

@@ -1,0 +1,14 @@
+# dsh-expert 组合包补丁（宿主面）。
+#
+# 唯一一行宿主行：版本闸门。它在 profile 启动时校验 harness 版本，
+# 低于基线 0.2.1-rc.4 时让该行激活失败并给出明确诊断，
+# 而不是让专家模式在一个无法支撑它的 harness 上静默降级。
+#
+# 可调项：
+#   minimumHarnessVersion  基线版本，默认 0.2.1-rc.4
+#   allowUnknownVersion    探测不到版本且能力也缺失时是否继续，默认 false（拒绝）
+- insert:
+    - id: dsh-expert
+      name: 'dsh-expert'
+      config:
+        minimumHarnessVersion: '0.2.1-rc.4'

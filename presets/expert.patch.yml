@@ -1,0 +1,129 @@
+# 专家模式 (Expert Mode) —— 一个 @deepseek-ai/dsh-agent-preset 声明行。
+#
+# 组合基线：官方 minimal 预设（packages/bundle/web-app/presets/minimal.patch.yml）
+# + 官方 ptc 预设中的 run_code 表现形式（tool-presentation: mode: ptc）。
+#
+# 设计取舍：
+#   * 身份与提示词沿用极简模式策略——单个 complete 权威段落、关闭运行期上下文快照，
+#     避免 Host 的 identity / workspace 指令再往提示词里加字。
+#   * run_code 由 tool-presentation(ptc) 提供，因此模型的动作面只有一个程序入口。
+#   * 从 ptc 预设中只保留两件事：
+#       - todo_write（建立 / 修改待办清单）
+#       - goal 三件套 create_goal / get_goal / update_goal（建立、修改目标并迭代）
+#   * ptc 预设里的其余行一律不挂载，这是「专家模式不臃肿」的实质：
+#       agent-instructions、time-context、tool-fs-search、tool-jobs、tool-schedule、
+#       skill-filesystem、tool-skill、plan-mode、delegation/subagent/workflow/ralph、
+#       tool-ask-user、tool-web、tool-present、tool-plugin-manager、
+#       tool-result-pruner。（compaction 保留，因为极简模式本身就有。）
+#   * 文件读写走 shell —— 与极简模式一致，所以 tool-fs 只开 read_image。
+#
+# 本插件只面向 DeepSeek 模型优化；persona 行会在模型不是 DeepSeek 时追加一段说明。
+- insert:
+    - id: preset-expert
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: expert
+        name: 专家模式
+        description: 极简提示词骨架上的专家模式：只有 run_code，外加 todo 清单与目标迭代；面向 DeepSeek 模型优化。
+        order: 5
+        plugins:
+          # ── 身份 ────────────────────────────────────────────────────────────────
+          # 自带 persona 行，而不是 @deepseek-ai/dsh-persona：complete 段落会丢弃
+          # Host 的 tools:sdk / tools:ptc-only 段落，必须由本行把 PTC SDK 渲染进
+          # 唯一保留下来的那个段落，否则模型看得到 run_code 却看不到可调用声明。
+          - id: persona
+            name: 'dsh-expert/preset-persona'
+            config:
+              sdk: true
+              noteNonDeepSeek: true
+              includeRuntimeContext: false
+
+          # ── 文件（只保留读图，其余走 shell） ─────────────────────────────────────
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+            config:
+              read: false
+              readImage: true
+              write: false
+              edit: false
+
+          # ── 上下文压缩（与极简模式一致） ─────────────────────────────────────────
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+
+          # ── shell（持久会话；Windows 用 pwsh，其余用 bash） ──────────────────────
+          - id: persistent-shell
+            name: cordis:group
+            group: true
+            isolate:
+              terminals: true
+            config:
+              - id: pty
+                name: '@deepseek-ai/dsh-terminal'
+              - id: terminal-bash
+                name: '@deepseek-ai/dsh-terminal-bash'
+                disabled: !!js process.platform === 'win32'
+                config:
+                  timeoutMs: 300000
+              - id: persistent-bash
+                name: '@deepseek-ai/dsh-tool-bash-persistent'
+                disabled: !!js process.platform === 'win32'
+                config:
+                  timeoutMs: 300000
+                  description: |-
+                    Run commands in a bash shell
+                    * When invoking this tool, the contents of the "command" parameter does not need to be XML-escaped.
+                    * Network access depends on the host environment.
+                    * State is persistent across command calls and discussions with the user.
+                    * To inspect a particular line range of a file, e.g. lines 10-25, try 'sed -n 10,25p /path/to/the/file'.
+                    * Avoid commands that may produce a very large amount of output.
+                    * Run long lived commands in the background, e.g. 'sleep 10 &' or start a server in the background.
+              - id: terminal-pwsh
+                name: '@deepseek-ai/dsh-terminal-bash'
+                disabled: !!js process.platform !== 'win32'
+                config:
+                  shellDialect: pwsh
+                  timeoutMs: 300000
+              - id: persistent-pwsh
+                name: '@deepseek-ai/dsh-tool-pwsh-persistent'
+                disabled: !!js process.platform !== 'win32'
+                config:
+                  timeoutMs: 300000
+                  description: |-
+                    Run commands in a PowerShell shell
+                    * When invoking this tool, the contents of the "command" parameter does not need to be XML-escaped.
+                    * Network access depends on the host environment.
+                    * State is persistent across command calls and discussions with the user.
+                    * Use native Windows paths (C:\...) and $env:NAME variables; this is PowerShell, not bash.
+                    * Avoid commands that may produce a very large amount of output.
+                    * Run long lived commands in the background, e.g. 'Start-Job' or start a process with Start-Process.
+
+          # ── 清单：建立与修改待办 ────────────────────────────────────────────────
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+
+          # ── 目标：建立、修改、迭代 ──────────────────────────────────────────────
+          # 只挂模型面工具与人类命令；goal SERVICE 及其会话驱动留在 Host 面。
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+
+          # ── 表现形式 ────────────────────────────────────────────────────────────
+          # 本预设最后一个动作：把上面这些工具收敛成一个 run_code 程序入口。
+          # 该行等待 Host 的 ptcRuntime；没有 TypeScript 运行时的部署会在此行
+          # 挂载失败并指名它，而不是等到第一次请求才出错。
+          - id: tool-presentation
+            name: '@deepseek-ai/dsh-agent-tool-presentation'
+            config:
+              mode: ptc

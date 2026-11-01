@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Expert Mode">
+  <defs>
+    <linearGradient id="expert-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1F3A8A"/>
+      <stop offset="100%" stop-color="#0B1733"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#expert-bg)"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="#4C7DF0" stroke-opacity="0.55" stroke-width="1.5"/>
+  <path d="M24 21 L15 32 L24 43" fill="none" stroke="#8FB4FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M40 21 L49 32 L40 43" fill="none" stroke="#8FB4FF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M35.5 17.5 L28.5 46.5" fill="none" stroke="#E8F0FF" stroke-width="3.4" stroke-linecap="round"/>
+  <circle cx="32" cy="52.5" r="2.4" fill="#FFD166"/>
+</svg>

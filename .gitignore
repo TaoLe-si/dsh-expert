@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Local research scratch (baseline harness extraction); never committed
+_scratch/
+
+# Logs and OS noise
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Packed artifacts
+*.tgz

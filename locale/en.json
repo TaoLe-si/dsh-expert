@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Expert Mode",
+    "description": "A DeepSeek-tuned agent mode on the official minimal prompt skeleton: run_code is the only action surface, carrying just the todo list and goal iteration. Ships a baseline gate that refuses to run below harness 0.2.1-rc.4."
+  }
+}
