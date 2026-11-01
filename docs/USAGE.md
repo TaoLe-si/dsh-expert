@@ -36,6 +36,25 @@ cmd //c "rmdir node_modules\dsh-expert"
 
 全部改动都在 `presets/expert.patch.yml`，改完重装/重启即可，**不需要改代码**。
 
+### 2.0 想把某个宿主面工具放回专家模式
+
+宿主面工具（subagent、team、web、glob/grep…）由 `tool-restrict` 按名字裁掉。
+要放回某个，把它的**工具名**写进 `keepGlobalTools`：
+
+```yaml
+          - id: tool-restrict
+            name: 'dsh-expert/preset-restrict'
+            config:
+              keepGlobalTools:
+                - web_fetch
+                - web_search
+                - glob
+                - grep
+```
+
+> 名字要写**工具名**（`web_fetch`），不是行 id（`tool-web`）。
+> 写错不会报错，只会什么都不放回——因为 deny 是按实际存在的全局工具名算的。
+
 ### 2.1 把文件检索加回来
 
 ```yaml
@@ -120,6 +139,7 @@ cmd //c "rmdir node_modules\dsh-expert"
 | 提示词里没有 SDK，工具是原生调用 | 部署没有 `ptcRuntime`，persona 已按设计降级 | 属预期：没有 PTC 运行时就没有 PTC 形态；装上 `@deepseek-ai/dsh-ptc-runtime-node` 即可 |
 | 提示 "no Host SDK renderer for runtime language" | runtime 语言不是 TS/Python | 该 runtime 尚未支持 |
 | 提示某工具 "declares no output schema" | 你加回的工具没有 output schema | PTC 形态要求每个可调用工具都有 output schema；该工具不能进这个模式 |
+| 专家模式里还能看到 subagent / 团队工具 / web | tool-restrict 行没挂上，或全局工具名变了 | 看 list_plugins 里 tool-restrict 是否失败；失败诊断会列出前 8 个未裁掉的工具名 |
 | 改了 YAML 没生效 | 未重启 / 被上层 patch 覆盖 | 重启；`list_plugins` 里 `overridden` 表示更高优先级层胜出 |
 
 ## 4. 本地开发

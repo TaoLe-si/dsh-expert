@@ -43,7 +43,18 @@ Callable inside a `run_code` program:
 
 Plus `compaction` and `/compact`, as in minimal mode.
 
-**Deliberately not mounted:** `agent-instructions`, `time-context`, `fs-search (glob/grep)`,
+**Deliberately removed:**
+
+> A trap worth naming, and a real bug fixed in 0.1.1: **omitting a row removes nothing.**
+>
+> The registry has two tiers. Rows at the composition root register GLOBAL tools that every
+> agent sees; preset rows register SCOPED tools that only shadow a global of the same name.
+> A preset that merely omits rows still inherits everything dsh-base mounts at the root
+> (subagent, team, web, jobs, fs, ...).
+>
+> Expert Mode therefore carries a tool-restrict row that calls ctx.tools.restrict({ deny }) on
+> the preset scope: one restriction covers every agent joined to the preset, and it also removes
+> those tools from the generated PTC SDK - the surface the model actually reads. `agent-instructions`, `time-context`, `fs-search (glob/grep)`,
 `jobs`, `schedule`, `skill-filesystem`, `tool-skill`, `plan-mode`,
 `subagent (delegation/workflow/ralph)`, `ask_user_question`, `web`, `present`,
 `plugin-manager`, `tool-result-pruner`.
@@ -124,7 +135,7 @@ The refusal names this plugin and the baseline, so it surfaces in the harness ac
 ## Development
 
 ```bash
-npm test    # 75 cases: semver, gate decisions, Standard Schema, persona/SDK rendering, preset structure, baseline package set
+npm test    # 89 cases: semver, gate decisions, Standard Schema, persona/SDK rendering, preset structure, baseline package set
 ```
 
 ## License

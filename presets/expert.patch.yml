@@ -10,11 +10,14 @@
 #   * 从 ptc 预设中只保留两件事：
 #       - todo_write（建立 / 修改待办清单）
 #       - goal 三件套 create_goal / get_goal / update_goal（建立、修改目标并迭代）
-#   * ptc 预设里的其余行一律不挂载，这是「专家模式不臃肿」的实质：
+#   * ptc 预设里的其余行一律不挂载：
 #       agent-instructions、time-context、tool-fs-search、tool-jobs、tool-schedule、
 #       skill-filesystem、tool-skill、plan-mode、delegation/subagent/workflow/ralph、
 #       tool-ask-user、tool-web、tool-present、tool-plugin-manager、
 #       tool-result-pruner。（compaction 保留，因为极简模式本身就有。）
+#   * 但"不挂载"只对预设自己新增的工具有效。dsh-base 在 composition root 上
+#     注册的工具是宿主面全局工具，每个 agent 都看得见；靠少写一行移除不掉。
+#     所以本预设带一行 tool-restrict，把全局工具显式 deny 掉（见下方注释）。
 #   * 文件读写走 shell —— 与极简模式一致，所以 tool-fs 只开 read_image。
 #
 # 本插件只面向 DeepSeek 模型优化；persona 行会在模型不是 DeepSeek 时追加一段说明。
@@ -27,6 +30,22 @@
         description: 极简提示词骨架上的专家模式：只有 run_code，外加 todo 清单与目标迭代；面向 DeepSeek 模型优化。
         order: 5
         plugins:
+          # ── 工具面裁剪（关键） ──────────────────────────────────────────────────
+          # 只"不挂载"是不够的：composition root 注册的工具是**宿主面全局工具**，
+          # 每个 agent 都看得见；预设只能新增作用域内工具、并按名字遮蔽同名全局
+          # 工具，永远无法靠"少写一行"移除任何东西。dsh-base 在根上挂了 bash/pwsh/
+          # fs/fs-search/jobs/skill/subagent/subagent-control/workflow/web/
+          # working-directory，本 profile 的 agent-team 层又加了团队工具，
+          # 所以必须显式 restrict 才能把它们从专家模式里真正拿掉。
+          #
+          # 该行在预设的 standing scope 上执行，因此覆盖加入本预设的每一个 agent，
+          # 并且同样作用于生成的 PTC SDK —— 也就是模型真正读到的那份声明。
+          - id: tool-restrict
+            name: 'dsh-expert/preset-restrict'
+            config:
+              # 额外保留的全局工具名（默认只保留本预设自己提供的那些）
+              keepGlobalTools: []
+
           # ── 身份 ────────────────────────────────────────────────────────────────
           # 自带 persona 行，而不是 @deepseek-ai/dsh-persona：complete 段落会丢弃
           # Host 的 tools:sdk / tools:ptc-only 段落，必须由本行把 PTC SDK 渲染进

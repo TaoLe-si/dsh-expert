@@ -41,7 +41,16 @@ PTC 模式很强，但工具面太宽：子代理、工作流、计划模式、�
 
 另有 `compaction`（上下文压缩）与 `/compact` 命令，与极简模式一致。
 
-**刻意不挂载**（这是"不臃肿"的实质）：
+**刻意拿掉**：
+
+> 这里有个容易踩的坑，也是 0.1.1 修掉的真 bug：**"不挂载"本身移除不了任何东西。**
+>
+> 工具注册表分两层：注册在 composition root 的是**宿主面全局工具**，每个 agent 都看得见；
+> 注册在预设里的只是**作用域内**工具，同名时遮蔽全局。所以只靠"少写一行"，
+> 预设反而会暴露 dsh-base 在根上挂的那一整套（subagent、team、web、jobs、fs…）。
+>
+> 专家模式因此带一行 tool-restrict，用 ctx.tools.restrict({ deny }) 在预设 scope 上
+> 显式裁掉全局工具——一层限制覆盖加入本预设的所有 agent，也会同步作用到生成的 PTC SDK。
 
 `agent-instructions`、`time-context`、`fs-search(glob/grep)`、`jobs`、`schedule`、
 `skill-filesystem`、`tool-skill`、`plan-mode`、`subagent(delegation/workflow/ralph)`、
@@ -128,7 +137,7 @@ Harness 没有暴露版本服务，所以宿主行用三条证据链判断，任
 ## 六、开发
 
 ```bash
-npm test        # 75 个用例：版本比较、闸门决策、Standard Schema、persona/SDK 渲染、预设结构、基线包存在性
+npm test        # 89 个用例：版本比较、闸门决策、Standard Schema、persona/SDK 渲染、预设结构、基线包存在性
 ```
 
 仓库结构：
@@ -142,7 +151,7 @@ lib/prompt.js              专家提示词与 DeepSeek 判定（纯函数，可�
 lib/preflight.js           闸门决策（纯函数，可测）
 lib/version.js             semver 比较（纯函数，可测）
 lib/schema.js              零依赖 Standard Schema（Cordis 用它校验每个行的 config）
-test/                      75 个用例
+test/                      89 个用例
 scripts/                   从 app.asar 提取基线、重生成基线夹具
 docs/                      设计说明、验证状态
 ```

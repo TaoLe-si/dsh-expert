@@ -1,6 +1,6 @@
 {
   "name": "dsh-expert",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "专家模式：以官方极简提示词为骨架，只保留 run_code、todo_write 与 goal 迭代，为 DeepSeek 模型优化的 DSH Harness Agent 模式。",
   "type": "module",
   "main": "lib/index.js",
@@ -11,7 +11,8 @@
     "./presets/expert.patch.yml": "./presets/expert.patch.yml",
     "./locale/*.json": "./locale/*.json",
     "./icon": "./icon.svg",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./preset-restrict": "./lib/restrict.js"
   },
   "files": [
     "lib",

@@ -70,6 +70,41 @@ return {
 
 ## 4. 工具面的取舍理由
 
+### 4.0 先讲清楚：工具注册表是两层的
+
+这是本项目唯一一次真实的现场失败，值得写详细。
+
+dsh-tools 的 view(scope) 把工具分成两部分：
+
+  inherited = global.tools + 祖先 scope 的工具
+  own       = 当前 scope 自己的工具
+
+可见性判定是 layers.every(layer => layer.admits(name))——**限制只能减，遮蔽只能按名替换**。
+换句话说：
+
+- 预设**新增**的都是作用域内工具，只影响加入该预设的 agent；
+- 预设**少写一行**什么都移除不了；根上注册的全局工具对每个 agent 都可见。
+
+dsh-base 在 composition root 上挂了 bash、pwsh、fs、fs-search、jobs、skill、
+subagent、subagent-control、workflow、web、working-directory 等一整排；本 profile 的
+dsh-experimental-agent-team-profile 又在根上插入了 tool-agent-team。
+所以 0.1.0 的"专家模式"实际上看得到 subagent 与全部团队工具——尽管预设里一行都没写。
+
+修法是 lib/restrict.js：在预设 scope 上调用 ctx.tools.restrict({ deny })。
+两个细节决定了它必须这么写：
+
+1. **deny 必须按"全局工具集"算，且减掉本预设自己提供的名字。**
+   admits(name) 是**按名字**匹配的，一旦 deny 里出现 bash，
+   预设自己注册的 bash 也会一起被隐藏（二者在 inherited 里同名归并）。
+   所以 PRESET_TOOL_NAMES 里的名字永不进 deny。
+2. **全局视图就是 schemas(undefined)。**
+   peek(undefined) 返回 undefined、scopeChainOf(undefined) 返回空链，
+   于是 view(undefined) 恰好只剩 layers.global.tools。
+
+另外 restrict() 在 scopeOf(ctx) === undefined 时会抛错（防止把全局都遮住），
+这与 presentAs() 是同一个门槛；而 presentAs 在官方 PTC 预设里就是从预设行调用的，
+所以预设的 standing scope 有 scope 键、可以安全 restrict。
+
 | 保留 | 理由 |
 | --- | --- |
 | `persistent-shell` | 极简模式的全部文件操作能力都在这；专家模式不重复实现 fs |

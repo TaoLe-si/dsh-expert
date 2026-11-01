@@ -49,9 +49,18 @@ check('preset declares id expert', presetRows[0]?.config?.id === 'expert', Strin
 
 const PACKAGE_NAME = 'dsh-expert'
 
-// The specifiers our own rows name must resolve from the profile.
+const flatten = (entries) =>
+  entries.flatMap((entry) => [entry, ...(Array.isArray(entry.config) ? flatten(entry.config) : [])])
+
+// Every specifier our own rows name must resolve from the profile. Derived from the
+// patches rather than hardcoded, so adding a row without exporting its subpath fails here.
+const constOwnSpecifiers = new Set([PACKAGE_NAME])
+for (const row of [...hostRows, ...flatten(presetRows[0]?.config?.plugins ?? [])]) {
+  if (typeof row?.name !== 'string') continue
+  if (row.name === PACKAGE_NAME || row.name.startsWith(PACKAGE_NAME + '/')) constOwnSpecifiers.add(row.name)
+}
 const requireFromProfile = createRequire(path.join(profileDir, 'package.json'))
-for (const specifier of [PACKAGE_NAME, `${PACKAGE_NAME}/preset-persona`]) {
+for (const specifier of [...constOwnSpecifiers].sort()) {
   try {
     check('resolves ' + specifier, Boolean(requireFromProfile.resolve(specifier)))
   } catch (error) {
@@ -59,7 +68,6 @@ for (const specifier of [PACKAGE_NAME, `${PACKAGE_NAME}/preset-persona`]) {
   }
 }
 
-const flatten = (entries) => entries.flatMap((entry) => [entry, ...(Array.isArray(entry.config) ? flatten(entry.config) : [])])
 const ids = flatten(presetRows[0]?.config?.plugins ?? []).map((entry) => entry.id)
 check('preset row ids unique', new Set(ids).size === ids.length, ids.join(', '))
 

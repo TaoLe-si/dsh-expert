@@ -6,11 +6,11 @@
 
 ## 一、已验证（可复现）
 
-### 1. 静态验证：77 个自动化用例全部通过
+### 1. 静态验证：89 个自动化用例全部通过
 
 ```bash
 npm test
-# ℹ tests 77  ℹ pass 77  ℹ fail 0
+# ℹ tests 89  ℹ pass 89  ℹ fail 0
 ```
 
 覆盖：
@@ -70,7 +70,7 @@ npm test
 | 选中 | `dsh.profile.bundles` 末尾追加 `dsh-expert` |
 
 `cordis.patch.yml` **未改动**（用户层保持原样）。
-安装后 `npm run verify:install` 的 11 项检查全部 PASS；`npm test` 77/77。
+安装后 `npm run verify:install` 的 12 项检查全部 PASS；`npm test` 77/77。
 
 ### 5. 回滚
 
@@ -80,6 +80,39 @@ node /e/dsh-expert/scripts/install-profile.mjs "$(pwd -W)" --remove
 cmd //c "rmdir node_modules\dsh-expert"
 cp package.json.bak-dsh-expert-20261101-231700 package.json   # 可选：连格式一起还原
 ```
+
+### 6. 现场失败记录：0.1.1 修掉的"泄露全局工具"
+
+0.1.0 安装后实测发现：专家模式里模型仍然看得到 `list_agents` / `spawn_teammate`
+等团队工具。原因是 `view(scope)` 的可见性判定为：
+
+```js
+const inherited = global.tools + 祖先 scope 的工具   // 预设自己注册的也在这里
+const own = 当前 scope 自己的工具
+for (const [name, def] of inherited) if (layers.every(l => l.admits(name))) visible.set(name, def)
+```
+
+**预设少写一行不会移除任何全局工具。** `dsh-base` 在 composition root 上注册了
+bash/pwsh/fs/fs-search/jobs/skill/subagent/subagent-control/workflow/web/
+working-directory，本 profile 的 `dsh-experimental-agent-team-profile` 又在根上
+插入了 `tool-agent-team`——它们对所有 agent 可见，与预设无关。
+
+0.1.1 增加 `lib/restrict.js`，在预设 scope 上 `ctx.tools.restrict({ deny })`。
+注意 `admits` 是**按名字**匹配的：deny 里若含 `bash`，预设自己的 `bash` 也会被隐藏，
+所以 deny 必须减掉 `PRESET_TOOL_NAMES`（有 7 个用例守着这条）。
+
+**这一步仍然只能靠重启实测确认**：`restrict()` 在 `scopeOf(ctx) === undefined` 时会抛错，
+而"预设的 standing scope 有 scope 键"是根据 `presentAs()`（官方 PTC 预设里同样从预设行调用）
+推断的，不是在本部署里亲眼看过的。若 `tool-restrict` 行激活失败，诊断会带
+"must not silently expose" 与未裁掉的工具名——那是这个假设错了，而不是全局工具没变。
+
+### 7. 已知残余限制
+
+- **deny 列表在 `apply` 时按当时的全局工具集算一次。** 若之后热装插件注册了**新名字**的
+  全局工具，它不会被裁掉，直到重启（重启会重新计算）。这是刻意不做 `guard()` 兜底的结果：
+  guard 需要 `exec` 上的工具名字段，而那个字段名没有在真实运行中验证过，
+  用错会让整个模式拒绝一切调用——比"偶尔多露一个工具"严重得多。
+- 想放回某个宿主面工具，用 `keepGlobalTools`（写**工具名**，不是行 id）。
 
 ## 二、尚未验证（不要当成已通过）
 
